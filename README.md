@@ -2,6 +2,10 @@
 
 # Learning Correction Filter via Degradation-Adaptive Regression for Blind Single Image Super-resolution
 
+<div align=center>
+<img src='./figs/network.png' width=2530>
+</div>
+
 ## Usage:
 
 ### Quick usage on testing dataset:  
