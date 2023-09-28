@@ -1,10 +1,10 @@
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
-from imresize import imresize
 from torchvision import transforms as T 
 import random
 import torch
 import os  
+from PIL import Image
 import imageio
 from util import read_image, create_gradient_map, im2tensor, create_probability_map, nn_interpolation
 
@@ -110,8 +110,11 @@ class DataGenerator(Dataset):
         """Get a crop for both G and D """
         g_in = self.next_crop(for_g=True, idx=idx)##HR
         d_in = self.next_crop(for_g=False, idx=idx)##LR
-        d_bq = imresize(im=d_in, scale_factor=int(1/self.conf.scale_factor_downsampler), kernel='cubic')#Up LR
-        g_bq = imresize(im=g_in, scale_factor=self.conf.scale_factor_downsampler, kernel='cubic')#down LR
+       
+        g_bq = np.array(Image.fromarray(g_in).resize((self.conf.input_crop_size//self.conf.scale_factor, self.conf.input_crop_size//self.conf.scale_factor), Image.BICUBIC))
+        
+        d_bq = np.array(Image.fromarray(d_in).resize((self.conf.input_crop_size*self.conf.scale_factor, self.conf.input_crop_size*self.conf.scale_factor), Image.BICUBIC))
+
 
         sample = {'HR':g_in,'HR_bicubic':g_bq, 'LR':d_in,'LR_up':d_bq}
         sample = self.transforms(sample)
