@@ -79,6 +79,7 @@ class Network:
             if self.iter == 0 or (self.iter>199 and self.iter % self.conf.eval_iters == 0):
                 self.quick_eval()
         self.iter = self.iter + 1
+        
 
 
         return self.psnr_max if self.gt_img is not None else None
@@ -197,7 +198,7 @@ class Network:
                self.SRFBN = util.tensor2im(SRFBN)
                plt.imsave(os.path.join(self.conf.output_dir, '%sx%s_SRFBNs.png' %(self.conf.abs_img_name,self.conf.scale_factor)), self.SRFBN)
                psnr = util.cal_y_psnr(self.SRFBN, self.gt_img, border=self.conf.scale_factor)
-               print('SRFBNs PSNR =',psnr)
+               #print('SRFBNs PSNR =',psnr)
         
         self.SR_img = util.tensor2im(SR_image)
         self.corrected_img = util.tensor2im(corrected_img)
@@ -208,7 +209,7 @@ class Network:
                 self.psnr_max=psnr
                 plt.imsave(os.path.join(self.conf.output_dir, '%sx%s_corrected.png' %(self.conf.abs_img_name,self.conf.scale_factor)), self.corrected_img)
                 plt.imsave(os.path.join(self.conf.output_dir, '%sx%s_ours.png' %(self.conf.abs_img_name,self.conf.scale_factor)), self.SR_img)
-                print('best PSNR =',psnr) 
+                #print('best PSNR =',psnr) 
              
 
 
