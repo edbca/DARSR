@@ -1,18 +1,16 @@
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
+from imresize import imresize
 from torchvision import transforms as T 
 import random
 import torch
-import os  
-from PIL import Image
+import os
+from PIL import Image  
 import imageio
 from util import read_image, create_gradient_map, im2tensor, create_probability_map, nn_interpolation
 
 def create_dataset(conf):
-    #dataset1 = DataGenerator(conf,conf.batch_size1)
-    #dataset = DataGenerator(conf,conf.batch_size)
     dataset = DataGenerator(conf)
-    #dataloader_one = DataLoader(dataset1, batch_size=conf.batch_size1, shuffle=False)
     dataloader = DataLoader(dataset, batch_size=conf.batch_size, shuffle=False)
 
     return dataloader
@@ -107,28 +105,22 @@ class DataGenerator(Dataset):
         return self.conf.num_iters * self.conf.batch_size
 
     def __getitem__(self, idx):
-        """Get a crop for both G and D """
+        """Get a crop """
         g_in = self.next_crop(for_g=True, idx=idx)##HR
         d_in = self.next_crop(for_g=False, idx=idx)##LR
-       
-        g_bq = np.array(Image.fromarray(g_in).resize((self.conf.input_crop_size//self.conf.scale_factor, self.conf.input_crop_size//self.conf.scale_factor), Image.BICUBIC))
         
-        d_bq = np.array(Image.fromarray(d_in).resize((self.conf.input_crop_size*self.conf.scale_factor, self.conf.input_crop_size*self.conf.scale_factor), Image.BICUBIC))
-
-
+        g_bq = np.array(Image.fromarray(g_in).resize((self.conf.input_crop_size//self.conf.scale_factor, self.conf.input_crop_size//self.conf.scale_factor), Image.BICUBIC))
+        d_bq = np.array(Image.fromarray(d_in).resize((self.conf.input_crop_size, self.conf.input_crop_size), Image.BICUBIC))
+        
         sample = {'HR':g_in,'HR_bicubic':g_bq, 'LR':d_in,'LR_up':d_bq}
         sample = self.transforms(sample)
         return sample
-        #return {'HR':im2tensor(g_in).squeeze(),'HR_bicubic':im2tensor(g_bq).squeeze(), 'LR':im2tensor(d_in).squeeze(),'LR_up':im2tensor(d_bq).squeeze() }
+
     def next_crop(self, for_g, idx):
-        """Return a crop according to the pre-determined list of indices. Noise is added to crops for D"""
+        """Return a crop according to the pre-determined list of indices"""
         size = self.g_input_shape if for_g else self.d_input_shape
         top, left = self.get_top_left(size, for_g, idx)
-        #top = np.random.randint(0, self.in_rows - size)
-        #left = np.random.randint(0, self.in_cols - size)
         crop_im = self.input_image[top:top + size, left:left + size, :]
-        #if not for_g:  # Add noise to the image for d
-        #    crop_im += np.random.randn(*crop_im.shape) / 255.0
         return crop_im
 
     def make_list_of_crop_indices(self, conf):
