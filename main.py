@@ -26,9 +26,9 @@ def train_and_eval(conf):
         # Forward path
         score_zero = model(LR_bi)
         score_one = model(LR_uk)
-        if iter==2980: 
-            print(score_zero)
-            print(score_one)                    
+        # if iter==2980: 
+        #     print(score_zero)
+        #     print(score_one)                    
         # Losses
         zero = torch.zeros(score_zero.size(),device=torch.device('cuda'))
         one = torch.ones(score_one.size(),device=torch.device('cuda'))
@@ -41,18 +41,20 @@ def train_and_eval(conf):
         iter = iter + 1      
     save_model(model)
 
-    ####SR
+    ####SR：Cycle 3 times, taking the maximum PSNR，you can reduce the number of cycles
     if conf.gt_path is not None:
-        for num in range(1,5):
+        for num in range(1,3):
             model_sr = Network(conf)
             learner = Learner(model_sr)
             print('*' * 60 + '\nTraining SR ...')
             for iteration, data in enumerate(tqdm.tqdm(dataloader)):
                 conf.psnr_max = model_sr.train(data)
                 learner.update(iteration, model_sr)
-                if iteration == 1001:
-                    print('best PSNR =',conf.psnr_max) 
-                    break
+                ### If the image convergence speed is fast, the training can be terminated early
+                # if iteration == 1001:
+                #     print('best PSNR =',conf.psnr_max) 
+                #     break
+            print('best PSNR =',conf.psnr_max)
     else:
         model_sr = Network(conf)
         learner = Learner(model_sr)
